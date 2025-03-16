@@ -2,15 +2,26 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { LogIn, DollarSign, Mail, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import {getAuth , signInWithEmailAndPassword} from "firebase/auth";
+import app from "./firebaseconfig"
+
+const auth = getAuth(app);
 
 export default function SignInForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/dashboard');
+    } catch(error: any) {
+        alert('invalid email or password')
+    }
   };
 
   return (

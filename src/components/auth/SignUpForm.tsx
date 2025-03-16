@@ -2,17 +2,39 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, Mail, Lock, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import app from "./firebaseconfig";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
+const auth = getAuth(app);
 
 export default function SignUpForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+  
+    // Basic validation
+    if (!email.includes('@')) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+  
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      navigate('/dashboard');
+    } catch (error: any) {
+      setError(error.message);
+    }
   };
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-gray-900 to-black flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -37,6 +59,11 @@ export default function SignUpForm() {
         className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"
       >
         <div className="bg-white/10 backdrop-blur-lg py-8 px-4 shadow-xl rounded-lg sm:px-10 border border-white/20">
+          {error && (
+            <div className="text-red-500 text-sm">
+              {error}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-200">
@@ -123,3 +150,4 @@ export default function SignUpForm() {
     </div>
   );
 }
+
